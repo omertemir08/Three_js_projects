@@ -25,10 +25,7 @@ function upgrade() {
 // Her saniye points'i artıran bot functionu
 function buybot() {
     if (points >= 100 && !botInterval) { // kontrol ediyoruz yeterli pointi
-        botInterval = setInterval(function() {
-            points += 1; // Her saniye points'i 1 artırıyoruz.
-            console.log("Bot çalışıyor! Yeni points: " + points);
-        }, 1000); //burdaki 1000 ne kadar sürede çalışcağı
+       openbot()
         console.log("Bot satın alındı!");
         points -= 100; // pointimizden parayı çıkarıyoruz
     } else if (botInterval) {
@@ -46,6 +43,15 @@ function botopenorclose() {
         console.log("Bot kapatıldı.");
     } else {
         console.log("Bot açıldı");
-        botInterval
+       openbot()
     }
 }
+
+
+function openbot(params) {
+    botInterval = setInterval(function() {
+    points += clickpower; // Her saniye points'i 1 artırır
+    console.log("Bot çalışıyor! Yeni points: " + points);
+}, 1000); //burdaki 1000 saliseyi ifade eder 1000 salisede bir çalışır bu function
+}
+
