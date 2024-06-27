@@ -55,3 +55,7 @@ function openbot(params) {
 }, 1000); //burdaki 1000 saliseyi ifade eder 1000 salisede bir çalışır bu function
 }
 
+function openupgradebar(params) {
+    bar=document.getElementById("upgrade bar")
+    bar.style.visibility=("visible")
+}
