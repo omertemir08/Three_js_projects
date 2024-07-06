@@ -18,6 +18,8 @@ camera.position.set(0, 1.6, 0); // Kamerayı zeminden başlatıyoruz
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Daha yumuşak gölgeler için
 
 
 var ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -31,14 +33,39 @@ scene.add(directionalLight);
 renderer.shadowMap.enabled = true;
 directionalLight.castShadow = true;
 
-// Zeminin rengi büyüklüğü gibi herşey 
+// Zemin oluşturma
 var groundGeometry = new THREE.PlaneGeometry(100, 100);
 var groundMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
 var ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotation.x = -Math.PI / 2; // Yatay konum
 ground.position.y = 0; // Yükseklik 
-ground.receiveShadow = true; 
+ground.receiveShadow = true; // Gölge alma özelliği
 scene.add(ground);
+
+// Ambiyans ışığı
+var ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Beyaz renkte ve %50 yoğunlukta bir ambiyans ışığı
+scene.add(ambientLight);
+
+// Yönlü ışık
+var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // Beyaz renkte ve %50 yoğunlukta bir yönlü ışık
+directionalLight.position.set(10, 15, 10); // Işık kaynağının konumu
+directionalLight.castShadow = true; // Gölgelerin oluşmasını sağla
+scene.add(directionalLight);
+
+// Spot ışık
+var spotLight = new THREE.SpotLight(0xffffff, 1); // Beyaz renkte ve %100 yoğunlukta bir spot ışık
+spotLight.position.set(5, 10, 5); // Işık kaynağının konumu
+spotLight.castShadow = true; // Gölgelerin oluşmasını sağla
+scene.add(spotLight);
+
+// Renderer ayarları
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Yumuşak gölgeler için
+
+// Zemin malzemesi ayarları
+var groundMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+ground.material = groundMaterial; // Yeni malzemeyi zemine uygula
+
 
 // pointerı three den çekiyoruz kamera için gerekli 
 var controls = new THREE.PointerLockControls(camera, document.body);
@@ -67,6 +94,9 @@ var isJumping = false; // zıplama uygulanıyomu kontrol ediyor
 var jumpVelocity = 0.25; // ne kadar kuvetli zıplayacağımızın değeri 
 var gravity = 0.01; // zıplıyınca max yükseklikten düşerkenki bizi yere çekme hızı
 var verticalVelocity = 0; // Yere düşerkenki hızımız 
+var moveSpeed = 0.01; //  yürüme speedi  
+var sprintMultiplier = false
+
 
 document.addEventListener('keydown', function (event) {
     switch (event.keyCode) {
@@ -87,6 +117,9 @@ document.addEventListener('keydown', function (event) {
                 jumpRequested = true;
             }
             break;
+            case 16: // Shift
+           moveSpeed=0.2
+            break;
     }
 });
 
@@ -104,6 +137,9 @@ document.addEventListener('keyup', function (event) {
         case 68: //D
             moveRight = false;
             break;
+            case 16: // Shift
+            moveSpeed=0.1
+            break;
     }
 });
 
@@ -114,17 +150,17 @@ function animate() {
 
     if (controls.isLocked) {
      
-        var moveSpeed = 0.1; // yürüme hızı kameranın birsonraki yerini hesaplama için kullanılıyor
-
+       
+   
     
         var moveDirection = new THREE.Vector3(0, 0, 0);    // Hareket vektörü oluştur
 
 
               // burdada  z-x indksini değiştiriyo (yatay enlem) 
-        if (moveForward) moveDirection.z = -1;
-        if (moveBackward) moveDirection.z = 1;
-        if (moveLeft) moveDirection.x = -1;
-        if (moveRight) moveDirection.x = 1;
+        if (moveForward) moveDirection.z = -moveSpeed;
+        if (moveBackward) moveDirection.z = moveSpeed;
+        if (moveLeft) moveDirection.x = -moveSpeed;
+        if (moveRight) moveDirection.x = moveSpeed;
 
 
         // camerayla hareketi senkranoze ediyor
