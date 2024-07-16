@@ -81,7 +81,22 @@ camera.add(hand2)
 document.addEventListener('click', function () {
     controls.lock();
 });
+function animateHands() {
+    // El sallama efekti sadece koşarken çalışacak
+    if (moveForward || moveBackward || moveLeft || moveRight) {
+        // El hareketi için bir döngü veya sabit adım değeri kullanabiliriz
+        var handSwingAmount = 0.15; // El sallanma miktarı
 
+        // Sol el
+        hand.position.z = -0.2 + Math.sin(Date.now() * 0.005) * handSwingAmount;
+        // Sağ el
+        hand2.position.z = -0.2 + Math.sin(Date.now() * 0.005 + Math.PI) * handSwingAmount;
+    } else {
+        // Eğer koşu durmamışsa, el pozisyonları sıfırlanır
+        hand.position.z = -0.2;
+        hand2.position.z = -0.2;
+    }
+}
 scene.add(controls.getObject());
 
 
@@ -194,6 +209,7 @@ function animate() {
             }
         }
     }
+     animateHands();
 
     renderer.render(scene, camera); // kamerayı renderlıyoruz
 }
