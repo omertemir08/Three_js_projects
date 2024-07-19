@@ -1,3 +1,4 @@
+
 /* Harflerin key code karşılığı 
 w = 87
 s = 83
@@ -115,6 +116,12 @@ var verticalVelocity = 0; // yere düşerkenki hızımız
 var moveSpeed = 0.1; // yürüme speedi  
 var sprintMultiplier = false;
 
+// Cube object
+var cubeGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.2); // Size of the cube
+var cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red color for the cube
+var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+scene.add(cube); 
+
 document.addEventListener('keydown', function (event) {
     switch (event.keyCode) {
         case 87: // W 
@@ -161,6 +168,7 @@ document.addEventListener('keyup', function (event) {
 });
 
 var onPlatform = true;
+var falling = false; // Kamera düşüyor mu kontrol eden değişken
 
 // Platform sınırlarını kontrol et
 function checkFalling() {
@@ -170,12 +178,18 @@ function checkFalling() {
     var platformMaxZ = platform.position.z + platformGeometry.parameters.depth / 2;
 
     if (camera.position.x < platformMinX || camera.position.x > platformMaxX ||
-        camera.position.z < platformMinZ || camera.position.z > platformMaxZ) {
+        camera.position.z < platformMinZ || camera.position.z > platformMaxZ ||
+        camera.position.y < 1) { // Platformdan düştü mü kontrol et
         onPlatform = false;
+        falling = true; // Düşme başladı
     } else {
         onPlatform = true;
+        falling = false; // Düşme durdu
     }
 }
+function a(){if(camera.position.y<-2){
+            resetPosition()
+            }}
 
 // Geri sayımı başlat
 function startCountdown() {
@@ -196,6 +210,7 @@ function resetPosition() {
     camera.position.set(0, 1.6, 0); // Kamerayı platformun üzerine taşıyoruz
     verticalVelocity = 0; // Hızı sıfırla
     onPlatform = true;
+    falling = false; // Düşmeyi durdur
 }
 
 function animate() {
@@ -221,6 +236,10 @@ function animate() {
             isJumping = true;
             verticalVelocity = jumpVelocity;
             jumpRequested = false;
+
+
+            cube.position.copy(camera.position);
+            cube.position.y += 0.2; 
         }
 
         if (isJumping) {
@@ -228,21 +247,24 @@ function animate() {
             verticalVelocity -= gravity;
 
             if (camera.position.y <= 1.6) {
-                camera.position.y = 1.6;
+
                 isJumping = false;
             }
         }
 
-        if (!onPlatform) {
+        if (falling) {
             verticalVelocity -= gravity; // Yerçekimini uygula
             camera.position.y += verticalVelocity; // Kamerayı aşağıya doğru hareket ettir
         }
+
+        checkFalling();
+        if (!onPlatform && !falling) {
+            startCountdown();
+        }
+
+        animateHands();
+        renderer.render(scene, camera);
     }
-
-    checkFalling();
-    animateHands();
-
-    renderer.render(scene, camera);
 }
 
 animate();
