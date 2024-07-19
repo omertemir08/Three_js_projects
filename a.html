@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Vue Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/jsm/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div ref="container"></div>
+    </div>
+    
+    <script type="module">
+        const { createApp } = Vue;
+
+        const Model = {
+            name: "Model",
+            data() {
+                return {
+                    scene: null,
+                    camera: null,
+                    renderer: null,
+                    control: null,
+                    model: null,
+                };
+            },
+            methods: {
+                initScene() {
+                    this.scene = new THREE.Scene();
+                },
+                initCamera() {
+                    this.camera = new THREE.PerspectiveCamera(
+                        50,
+                        window.innerWidth / window.innerHeight,
+                        0.01,
+                        1000
+                    );
+                    this.camera.position.set(0.02, 5, 10);
+                },
+                initRenderer() {
+                    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                    this.$refs.container.appendChild(this.renderer.domElement);
+                },
+                initLight() {
+                    const light = new THREE.AmbientLight(0xffffff, 1);
+                    this.scene.add(light);
+                },
+                initControl() {
+                    this.control = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                    this.control.enableDamping = true;
+                    this.control.dampingFactor = 0.05;
+                    this.control.autoRotate = true;
+                    this.control.autoRotateSpeed = 2.0;
+                },
+                initModel() {
+                    const loader = new GLTFLoader();
+                    loader.load(
+                        "Duck.glb",
+                        (glb) => {
+                            this.model = glb.scene;
+                            this.scene.add(this.model);
+                        },
+                        (xhr) => {
+                            console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+                        },
+                        (error) => {
+                            console.log("An error happened:", error);
+                        }
+                    );
+                },
+                init() {
+                    this.initScene();
+                    this.initCamera();
+                    this.initRenderer();
+                    this.initLight();
+                    this.initControl();
+                    this.initModel();
+                },
+                animate() {
+                    requestAnimationFrame(this.animate.bind(this));
+                    this.control.update(); // Update controls
+                    this.renderer.render(this.scene, this.camera);
+                },
+            },
+            mounted() {
+                this.init();
+                this.animate();
+                window.addEventListener("resize", () => {
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                });
+            },
+        };
+
+        createApp(Model).mount('#app');
+    </script>
+</body>
+</html>
